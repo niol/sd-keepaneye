@@ -1,0 +1,21 @@
+Source: sd-keepaneye
+Section: admin
+Priority: optional
+Maintainer: Alexandre Rossi <alexandre.rossi@gmail.com>
+Build-Depends: debhelper-compat (= 13), python3, dh-python, pandoc
+Standards-Version: 4.6.0
+Rules-Requires-Root: no
+Homepage: https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/about/
+Vcs-Git: https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/
+Vcs-Browser: https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/
+
+Package: sd-keepaneye
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends},
+    adduser,
+    python3-dbus,
+    python3-systemd,
+Description: Keeping an eye on systemd
+ sd-keepaneye is designed to provide mail notifications upon systemd jobs
+ failure (like cron has been mailing stderr output. It consists in a daemon
+ that listen to events on systemd D-Bus interface.

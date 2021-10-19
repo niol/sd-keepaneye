@@ -1,0 +1,166 @@
+#!/usr/bin/python3
+#
+# sd-keepaneye, keeping an eye on systemd.
+# Copyright (C) 2021 Alexandre Rossi <alexandre.rossi@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+import argparse
+from email.message import EmailMessage
+import logging
+import os
+import signal
+import subprocess
+import sys
+
+from gi.repository import GLib
+
+import dbus
+import dbus.mainloop.glib
+import systemd.daemon
+import systemd.journal
+
+
+def readfile(path):
+    with open(path, 'r') as f:
+        return f.read().strip()
+
+
+MACHINEID = readfile('/etc/machine-id')
+HOSTNAME = os.uname()[1]
+BOOTID = readfile('/proc/sys/kernel/random/boot_id')
+
+
+def send_failure_email(unit):
+    msg = EmailMessage()
+    msg['Subject'] = 'Status report for unit: %s' % unit
+    msg['From'] = 'systemd event monitor <root>'
+    msg['To'] = 'root'
+
+    msg.set_content("""
+Hostname:\t%(hostname)s
+Machine ID:\t%(machineid)s
+Boot ID:\t%(bootid)s
+
+%(status)s
+""" % {
+    'unit'      : unit,
+    'hostname'  : HOSTNAME,
+    'machineid' : MACHINEID,
+    'bootid'    : BOOTID,
+    # FIXME: replace with systemd.journal.Reader() ?
+    'status'    : subprocess.run(('systemctl', 'status', unit, '-l', '-n', '9999'),
+                                 capture_output=True).stdout.decode(sys.getdefaultencoding()),
+})
+
+    cmd = ('/usr/sbin/sendmail', '-t', '-oi')
+    try:
+        p = subprocess.run(cmd, input=msg.as_bytes(), capture_output=True)
+    except subprocess.CalledProcessError:
+        logging.error('could not send email for failure of %s' % unit)
+        logging.error('`%s` call failed with the following output:%s'
+                      % (' '.join(cmd),
+                         p))
+    else:
+        logging.info('sent email for failure of %s' % unit)
+
+
+class SystemdInterface(object):
+
+    def __init__(self):
+        try:
+            self.sysbus = dbus.SystemBus()
+        except dbus.DBusException:
+            logging.error('Cannot connect to system D-Bus')
+            sys.exit(1)
+
+        try:
+            systemd1 = self.sysbus.get_object('org.freedesktop.systemd1',
+                                              '/org/freedesktop/systemd1')
+            systemd1.connect_to_signal('JobRemoved', self.systemd_event_cb)
+        except dbus.DBusException:
+            sys.exit(1)
+
+        self.manager = dbus.Interface(systemd1,
+                                      'org.freedesktop.systemd1.Manager')
+        GLib.timeout_add(100, self.subscribe)
+
+    def subscribe(self):
+        self.manager.Subscribe()
+        logging.info('subscribed to systemd events')
+
+        failed_units = []
+        for u in self.manager.ListUnits():
+            unit, load, active, state = u[:4]
+            if state == 'failed':
+                failed_units.append(unit)
+        if failed_units:
+            logging.debug('found the following failed units at startup: \n\t%s' % '\n\t'.join(failed_units))
+            for failed_unit in failed_units:
+                send_failure_email(failed_unit)
+        else:
+            logging.debug('no failed units found at startup')
+
+        systemd.daemon.notify('READY=1')
+        return False
+
+    def get_unit_state(self, unit_name):
+        unit = self.sysbus.get_object('org.freedesktop.systemd1',
+                                      self.manager.GetUnit(unit_name))
+        unit_if = dbus.Interface(unit, 'org.freedesktop.DBus.Properties')
+        return unit_if.Get('org.freedesktop.systemd1.Unit', 'ActiveState')
+
+    def systemd_event_cb(self, pid, jobid, unit, result):
+        state = self.get_unit_state(unit)
+        logging.debug('received event for unit %s with result %s, ActiveState=%s' % (unit, result, state))
+        if result == 'failed' or state == 'failed':
+            send_failure_email(unit)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Systemd Event Monitor.')
+    parser.add_argument('-d', '--debug',
+                        action='store_true',
+                        dest="debug",
+                        help='Enable DEBUG level loggging and log to STDOUT instead of journald')
+    args = parser.parse_args()
+
+    log = logging.getLogger()
+
+    if args.debug:
+        log_level = logging.DEBUG
+        log_handler = logging.StreamHandler(sys.stdout)
+        log_handler.setFormatter(logging.Formatter('%(levelname)s:%(message)s'))
+    else:
+        log_level = logging.INFO
+        log_handler = systemd.journal.JournalHandler(SYSLOG_IDENTIFIER='keepaneyed')
+    log.setLevel(log_level)
+    log.addHandler(log_handler)
+
+    logging.debug('machine-id is %s' % MACHINEID)
+    logging.debug('hostname   is %s' % HOSTNAME)
+    logging.debug('boot-id    is %s' % BOOTID)
+
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    SystemdInterface()
+    loop = GLib.MainLoop()
+
+    def sigint_handler(sig, frame):
+        if sig == signal.SIGINT:
+            loop.quit()
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    loop.run()

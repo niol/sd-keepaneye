@@ -1,0 +1,11 @@
+[Unit]
+Description=Systemd keepaneye daemon
+Documentation=man:keepaneyed
+
+[Service]
+Type=notify
+ExecStart=/usr/sbin/keepaneyed
+User=_sd-keepaneye
+
+[Install]
+WantedBy=multi-user.target
