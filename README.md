@@ -8,7 +8,8 @@ failures. One goal of this tool is to bring back the nice functionality of
 
 It features the following functionality:
 
-* send mail upon job failure.
+* send mail upon job failure: this feature is provided by `keepaneyed`
+  which monitors systemd events using the D-Bus interface.
 
 ## Alternatives
 
