@@ -7,7 +7,8 @@ failures. One goal of this tool is to bring back the nice functionality of
 `cron`, which mails `stderr` output.
 
 It features the following functionality:
-  * send mail upon job failure.
+
+* send mail upon job failure.
 
 ## Alternatives
 
@@ -17,46 +18,46 @@ needs to be done for each monitored service. Example implementation:
 
 `/etc/systemd/system/unit-status-mail@.service`:
 
-  [Unit]
-  Description=Unit Status Mailer Service
-  After=network.target
+    [Unit]
+    Description=Unit Status Mailer Service
+    After=network.target
 
-  [Service]
-  Type=oneshot
-  ExecStart=/usr/local/bin/unit-status-mail %I "Hostname: %H" "Machine ID: %m" "Boot ID: %b"
+    [Service]
+    Type=oneshot
+    ExecStart=/usr/local/bin/unit-status-mail %I "Hostname: %H" "Machine ID: %m" "Boot ID: %b"
 
 `/usr/local/bin/unit-status-mail`:
 
-  #!/bin/bash
+    #!/bin/bash
 
-  MAILTO="root"
-  MAILFROM="unit-status-mailer"
-  UNIT=$1
+    MAILTO="root"
+    MAILFROM="unit-status-mailer"
+    UNIT=$1
 
-  EXTRA=""
-  for e in "${@:2}"; do
-    EXTRA+="$e"$'\n'
-  done
+    EXTRA=""
+    for e in "${@:2}"; do
+      EXTRA+="$e"$'\n'
+    done
 
-  UNITSTATUS=$(systemctl status $UNIT -l -n 9999)
+    UNITSTATUS=$(systemctl status $UNIT -l -n 9999)
 
-  sendmail $MAILTO <<EOF
-  From:$MAILFROM
-  To:$MAILTO
-  Subject:Status mail for unit: $UNIT
+    sendmail $MAILTO <<EOF
+    From:$MAILFROM
+    To:$MAILTO
+    Subject:Status mail for unit: $UNIT
 
-  Status report for unit: $UNIT
-  $EXTRA
+    Status report for unit: $UNIT
+    $EXTRA
 
-  $UNITSTATUS
-  EOF
+    $UNITSTATUS
+    EOF
 
-  echo -e "Status mail sent to: $MAILTO for unit: $UNIT"
+    echo -e "Status mail sent to: $MAILTO for unit: $UNIT"
 
 and for instance `/etc/systemd/system/certbot.service.d/email-failure.conf`:
 
-  [Unit]
-  OnFailure=unit-status-mail@%n.service
+    [Unit]
+    OnFailure=unit-status-mail@%n.service
 
 ## Contributing
 
@@ -66,10 +67,10 @@ Code may be downloaded using Git :
 
     $ git clone http://sml.zincube.net/~niol/repositories.git/sd-keepaneye
 
-It is browsable online in [sd-keepaneye's repository browser][1], and this page
-also provides an up to date snapshot of the development source tree.
-
-[1] http://sml.zincube.net/~niol/repositories.git/sd-keepaneye
+It is browsable online in
+[sd-keepaneye's repository browser](http://sml.zincube.net/~niol/repositories.git/sd-keepaneye),
+and this page also provides an up to date snapshot of the development
+source tree.
 
 Patches are very welcome.
 
