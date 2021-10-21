@@ -9,9 +9,12 @@ failures. One goal of this tool is to bring back the nice functionality of
 It features the following functionality:
 
 * send mail upon job failure: this feature is provided by `keepaneyed`
-  which monitors systemd events using the D-Bus interface.
+  which monitors systemd events using the D-Bus interface. It monitors all
+  jobs and all failures.
 
 ## Alternatives
+
+### `OnFailure=`
 
 The `OnFailure=` alternative consists in defining a unit called when
 the monitored service fails. The drawback of this appproach is that this
@@ -59,6 +62,17 @@ and for instance `/etc/systemd/system/certbot.service.d/email-failure.conf`:
 
     [Unit]
     OnFailure=unit-status-mail@%n.service
+
+### systemd_mon
+
+[`systemd_mon`](https://github.com/joonty/systemd_mon) does about the same
+thing and can notify to slack or hipchat. However, the list of monitored
+services must be specified in a configuration file.
+
+### sagbescheid
+
+[`sagbescheid`](https://github.com/mineo/sagbescheid) seems to do the same
+and can notify to IRC. It also can monitor Unit state transitions.
 
 ## Contributing
 
