@@ -27,7 +27,7 @@ included below. For a complete description, see the `-h` switch.
 
 `-d`
 
-: Enable DEBUG level loggging and log to STDOUT instead of journald.
+: Enable DEBUG level logging and log to STDOUT instead of journald.
 
 `-h` `--help`
 
