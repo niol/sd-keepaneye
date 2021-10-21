@@ -74,7 +74,7 @@ class build(distutils.command.build.build):
 
 
 setup(name='sd-keepaneye',
-      version='0.2',
+      version='0.3',
       description='Keeping an eye on systemd',
       author='Alexandre Rossi',
       author_email='alexandre.rossi@gmail.com',
