@@ -1,3 +1,10 @@
+sd-keepaneye (0.3-1) unstable; urgency=medium
+
+  * probe unit state once more and check SubState
+  * set version to 0.3
+
+ -- Alexandre Rossi <alexandre.rossi@gmail.com>  Thu, 21 Oct 2021 11:09:12 +0200
+
 sd-keepaneye (0.2-1) unstable; urgency=medium
 
   * Initial release.
