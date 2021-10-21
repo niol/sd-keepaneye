@@ -115,9 +115,9 @@ class SystemdInterface(object):
             logging.debug('no failed units found at startup')
 
         systemd.daemon.notify('READY=1')
-        return False
+        return False # make Glib.timeout_add() not repeat the call
 
-    def get_unit_state(self, unit_name):
+    def is_unit_failed(self, unit_name):
         try:
             unit = self.manager.GetUnit(unit_name)
         except dbus.DBusException as e:
@@ -129,13 +129,38 @@ class SystemdInterface(object):
         else:
             unit_if = self.sysbus.get_object('org.freedesktop.systemd1', unit)
             unit_props = dbus.Interface(unit_if, 'org.freedesktop.DBus.Properties')
-            return unit_props.Get('org.freedesktop.systemd1.Unit', 'ActiveState')
+
+            failed_state = False
+
+            active_state = unit_props.Get('org.freedesktop.systemd1.Unit',
+                                          'ActiveState')
+            sub_state = 'unprobbed'
+            if active_state == 'failed':
+                failed_state = True
+            else:
+                sub_state = unit_props.Get('org.freedesktop.systemd1.Unit',
+                                           'SubState')
+                if sub_state == 'failed':
+                    failed_state = True
+            logging.debug('Unit %s: ActiveState=%s, SubState=%s'
+                          % (unit, active_state, sub_state))
+
+            if failed_state:
+                send_failure_email(unit_name)
+
+            return failed_state
+
+    def is_unit_failed_retry(self, unit_name):
+        self.is_unit_failed(unit_name)
+        return False # make Glib.timeout_add() not repeat the call
 
     def systemd_event_cb(self, pid, jobid, unit, result):
-        state = self.get_unit_state(unit)
-        logging.debug('received event for unit %s with result %s, ActiveState=%s' % (unit, result, state))
-        if result == 'failed' or state == 'failed':
+        logging.debug('received event for unit %s with result %s'
+                      % (unit, result))
+        if result == 'failed':
             send_failure_email(unit)
+        elif not self.is_unit_failed(unit):
+            GLib.timeout_add(1000, self.is_unit_failed_retry, unit)
 
 
 if __name__ == '__main__':
