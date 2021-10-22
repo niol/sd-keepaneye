@@ -17,8 +17,7 @@ It features the following functionality:
 ### `OnFailure=`
 
 The `OnFailure=` alternative consists in defining a unit called when
-the monitored service fails. The drawback of this appproach is that this
-needs to be done for each monitored service. Example implementation:
+the monitored service fails. Example implementation:
 
 `/etc/systemd/system/unit-status-mail@.service`:
 
@@ -59,6 +58,18 @@ needs to be done for each monitored service. Example implementation:
     echo -e "Status mail sent to: $MAILTO for unit: $UNIT"
 
 and for instance `/etc/systemd/system/certbot.service.d/email-failure.conf`:
+
+    [Unit]
+    OnFailure=unit-status-mail@%n.service
+
+Since [systemd v244](https://lists.freedesktop.org/archives/systemd-devel/2019-November/043772.html),
+this can even be defined for all services:
+
+> Unit files now support top level dropin directories of the form
+> <unit_type>.d/ (e.g. service.d/) that may be used to add configuration
+> that affects all corresponding unit files.
+
+This is thus achieved in `/etc/systemd/system/service.d/email-failure.conf`:
 
     [Unit]
     OnFailure=unit-status-mail@%n.service
