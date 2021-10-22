@@ -98,21 +98,25 @@ class SystemdInterface(object):
                                       'org.freedesktop.systemd1.Manager')
         GLib.timeout_add(100, self.subscribe)
 
+        self.failed_units = []
+
+    def __init_failed_units(self):
+        for u in self.manager.ListUnits():
+            unit, load, active, state = u[:4]
+            if state == 'failed':
+                self.failed_units.append(unit)
+        if self.failed_units:
+            logging.debug('found the following failed units at startup: \n\t%s' % '\n\t'.join(self.failed_units))
+            for failed_unit in self.failed_units:
+                send_failure_email(failed_unit)
+        else:
+            logging.debug('no failed units found at startup')
+
     def subscribe(self):
         self.manager.Subscribe()
         logging.info('subscribed to systemd events')
 
-        failed_units = []
-        for u in self.manager.ListUnits():
-            unit, load, active, state = u[:4]
-            if state == 'failed':
-                failed_units.append(unit)
-        if failed_units:
-            logging.debug('found the following failed units at startup: \n\t%s' % '\n\t'.join(failed_units))
-            for failed_unit in failed_units:
-                send_failure_email(failed_unit)
-        else:
-            logging.debug('no failed units found at startup')
+        self.__init_failed_units()
 
         systemd.daemon.notify('READY=1')
         return False # make Glib.timeout_add() not repeat the call
@@ -143,10 +147,19 @@ class SystemdInterface(object):
                 if sub_state == 'failed':
                     failed_state = True
             logging.debug('Unit %s: ActiveState=%s, SubState=%s'
-                          % (unit, active_state, sub_state))
+                          % (unit_name, active_state, sub_state))
 
             if failed_state:
-                send_failure_email(unit_name)
+                if unit_name in self.failed_units:
+                    logging.debug('Unit %s: already failed, not notifying.'
+                                  % unit_name)
+                else:
+                    self.failed_units.append(unit_name)
+                    send_failure_email(unit_name)
+
+            elif unit_name in self.failed_units:
+                self.failed_units.remove(unit_name)
+                logging.debug('Unit %s: not failed anymore' % unit_name)
 
             return failed_state
 
