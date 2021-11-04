@@ -1,2 +1,3 @@
 keepaneyed /usr/sbin
 keepaneyed.service /lib/systemd/system
+keepaneye.conf /etc

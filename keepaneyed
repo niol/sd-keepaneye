@@ -26,12 +26,16 @@ import signal
 import subprocess
 import sys
 
-from gi.repository import GLib
 
+from gi.repository import GLib
 import dbus
 import dbus.mainloop.glib
 import systemd.daemon
 import systemd.journal
+import tomli
+
+
+INSTALLED = os.path.split(os.path.dirname(__file__))[-1] in ('bin', 'sbin')
 
 
 def readfile(path):
@@ -175,6 +179,16 @@ class SystemdInterface(object):
         elif not self.is_unit_failed(unit):
             GLib.timeout_add(1000, self.is_unit_failed_retry, unit)
 
+def load_conf():
+    config_name = 'keepaneye.conf'
+    if INSTALLED:
+        config_path = os.path.join('/etc', config_name)
+    else:
+        config_path = os.path.join(os.path.dirname(__file__), config_name)
+
+    with open(config_path, 'rb') as f:
+        return tomli.load(f)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Systemd Event Monitor.')
@@ -184,9 +198,14 @@ if __name__ == '__main__':
                         help='Enable DEBUG level loggging and log to STDOUT instead of journald')
     args = parser.parse_args()
 
+    conf = load_conf()
+
     log = logging.getLogger()
 
     if args.debug:
+        conf['keepaneyed']['debug'] = True
+
+    if conf['keepaneyed']['debug']:
         log_level = logging.DEBUG
         log_handler = logging.StreamHandler(sys.stdout)
         log_handler.setFormatter(logging.Formatter('%(levelname)s:%(message)s'))

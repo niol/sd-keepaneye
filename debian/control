@@ -15,6 +15,7 @@ Depends: ${misc:Depends}, ${python3:Depends},
     adduser,
     python3-dbus,
     python3-systemd,
+    python3-tomli,
 Description: Keeping an eye on systemd
  sd-keepaneye is designed to provide mail notifications upon systemd jobs
  done (like cron has been mailing stderr output). It consists in a daemon
