@@ -13,7 +13,7 @@ Package: sd-keepaneye
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends},
     adduser,
-    python3-dbus,
+    python3-pydbus,
     python3-systemd,
     python3-tomli,
 Description: Keeping an eye on systemd

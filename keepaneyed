@@ -28,8 +28,7 @@ import sys
 
 
 from gi.repository import GLib
-import dbus
-import dbus.mainloop.glib
+import pydbus
 import systemd.daemon
 import systemd.journal
 import tomli
@@ -85,21 +84,16 @@ Boot ID:\t%(bootid)s
 class SystemdInterface(object):
 
     def __init__(self):
-        try:
-            self.sysbus = dbus.SystemBus()
-        except dbus.DBusException:
+        self.sysbus = pydbus.SystemBus()
+        if not self.sysbus:
             logging.error('Cannot connect to system D-Bus')
             sys.exit(1)
 
-        try:
-            systemd1 = self.sysbus.get_object('org.freedesktop.systemd1',
-                                              '/org/freedesktop/systemd1')
-            systemd1.connect_to_signal('JobRemoved', self.systemd_event_cb)
-        except dbus.DBusException:
-            sys.exit(1)
+        systemd1 = self.sysbus.get('.systemd1')
+        systemd1.JobRemoved.connect(self.systemd_event_cb)
 
-        self.manager = dbus.Interface(systemd1,
-                                      'org.freedesktop.systemd1.Manager')
+        self.manager = systemd1['.Manager']
+
         GLib.timeout_add(100, self.subscribe)
 
         self.failed_units = []
@@ -126,17 +120,13 @@ class SystemdInterface(object):
         return False # make Glib.timeout_add() not repeat the call
 
     def is_unit_failed(self, unit_name):
-        try:
-            unit = self.manager.GetUnit(unit_name)
-        except dbus.DBusException as e:
-            if e.get_dbus_name() == 'org.freedesktop.systemd1.NoSuchUnit':
-                logging.debug('unit %s not found in system bus, user unit?' % unit_name)
-                return None
-            else:
-                raise
+        unit = self.manager.GetUnit(unit_name)
+        if not unit:
+            logging.debug('unit %s not found in system bus, user unit?' % unit_name)
+            return None
         else:
-            unit_if = self.sysbus.get_object('org.freedesktop.systemd1', unit)
-            unit_props = dbus.Interface(unit_if, 'org.freedesktop.DBus.Properties')
+            unit_if = self.sysbus.get('.systemd1', unit)
+            unit_props = unit_if['org.freedesktop.DBus.Properties']
 
             failed_state = False
 
@@ -219,7 +209,6 @@ if __name__ == '__main__':
     logging.debug('hostname   is %s' % HOSTNAME)
     logging.debug('boot-id    is %s' % BOOTID)
 
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     SystemdInterface()
     loop = GLib.MainLoop()
 
