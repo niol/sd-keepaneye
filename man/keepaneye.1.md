@@ -1,17 +1,17 @@
-% KEEPANEYED(8)
+% KEEPANEYE(1)
 % Alexandre Rossi
 
 # NAME
 
-keepaneyed - keeping an eye on systemd
+keepaneye - keeping an eye on systemd
 
 # SYNOPSIS
 
-**keepaneyed** **-h** | **-d**
+**keepaneye** [**-h**] [**-d**] **SUBCOMMAND**
 
 # DESCRIPTION
 
-`sd-keeponeye` aims at monitoring systemd services and notifying
+`sd-keepaneye` aims at monitoring systemd services and notifying
 failures. One goal of this tool is to bring back the nice functionality of
 `cron`, which mails `stderr` output.
 
@@ -32,6 +32,12 @@ included below. For a complete description, see the `-h` switch.
 `-h` `--help`
 
 : Show summary of options.
+
+# SUB-COMMANDS
+
+`daemon`
+
+: Start the daemon.
 
 # FILES
 

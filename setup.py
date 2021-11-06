@@ -79,7 +79,7 @@ setup(name='sd-keepaneye',
       author='Alexandre Rossi',
       author_email='alexandre.rossi@gmail.com',
       url='https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/about/',
-      scripts=['keepaneyed'],
+      scripts=['keepaneye'],
       data_files=[],
       cmdclass = {
           'build'         : build,

@@ -186,6 +186,11 @@ if __name__ == '__main__':
                         action='store_true',
                         dest="debug",
                         help='Enable DEBUG level loggging and log to STDOUT instead of journald')
+
+    subparsers = parser.add_subparsers(dest='subcommand', help='sub-commands help')
+
+    parser_daemon = subparsers.add_parser('daemon', help='launch daemon watching systemd D-bus events')
+
     args = parser.parse_args()
 
     conf = load_conf()
@@ -209,12 +214,13 @@ if __name__ == '__main__':
     logging.debug('hostname   is %s' % HOSTNAME)
     logging.debug('boot-id    is %s' % BOOTID)
 
-    SystemdInterface()
-    loop = GLib.MainLoop()
+    if args.subcommand == 'daemon':
+        SystemdInterface()
+        loop = GLib.MainLoop()
 
-    def sigint_handler(sig, frame):
-        if sig == signal.SIGINT:
-            loop.quit()
-    signal.signal(signal.SIGINT, sigint_handler)
+        def sigint_handler(sig, frame):
+            if sig == signal.SIGINT:
+                loop.quit()
+        signal.signal(signal.SIGINT, sigint_handler)
 
-    loop.run()
+        loop.run()

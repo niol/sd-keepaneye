@@ -1,10 +1,10 @@
 [Unit]
 Description=Systemd keepaneye daemon
-Documentation=man:keepaneyed
+Documentation=man:keepaneye
 
 [Service]
 Type=notify
-ExecStart=/usr/sbin/keepaneyed
+ExecStart=/usr/bin/keepaneye daemon
 User=_sd-keepaneye
 
 [Install]
