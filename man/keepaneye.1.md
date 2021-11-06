@@ -39,11 +39,28 @@ included below. For a complete description, see the `-h` switch.
 
 : Start the daemon.
 
+# CONFIGURATION FILE
+
+The configuration file uses Tom's Obvious Minimal Language (TOML) as a
+file format. An example configuration with all options is provided.
+
+## SECTION KEEPANEYE
+
+This section defines general configuration options.
+
+`debug`
+
+: same as `-d`, `true` or `false`
+
 # FILES
 
 `/lib/systemd/system/keepaneyed.service`
 
 : SystemD service file.
+
+`/etc/keepaneye.conf`
+
+: Configuration file
 
 # SEE ALSO
 

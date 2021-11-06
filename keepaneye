@@ -60,9 +60,9 @@ if __name__ == '__main__':
     log = logging.getLogger()
 
     if args.debug:
-        conf['keepaneyed']['debug'] = True
+        conf['keepaneye']['debug'] = True
 
-    if conf['keepaneyed']['debug']:
+    if conf['keepaneye']['debug']:
         log_level = logging.DEBUG
         log_handler = logging.StreamHandler(sys.stdout)
         log_handler.setFormatter(logging.Formatter('%(levelname)s:%(message)s'))
