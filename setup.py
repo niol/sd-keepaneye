@@ -80,6 +80,7 @@ setup(name='sd-keepaneye',
       author_email='alexandre.rossi@gmail.com',
       url='https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/about/',
       scripts=['keepaneye'],
+      packages=['sdkeepaneye'],
       data_files=[],
       cmdclass = {
           'build'         : build,
