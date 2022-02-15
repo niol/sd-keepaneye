@@ -78,6 +78,19 @@ class SystemdInterface(object):
         logging.debug("Policy for unit %s is '%s'", unit, policy)
         return policy
 
+    def register_failed_state(self, unit_name, failed_state):
+        if failed_state:
+            if unit_name in self.failed_units:
+                logging.debug('Unit %s: already failed, not notifying.'
+                                % unit_name)
+            else:
+                self.failed_units.append(unit_name)
+                notify.send_email(unit_name)
+
+        elif unit_name in self.failed_units:
+            self.failed_units.remove(unit_name)
+            logging.debug('Unit %s: not failed anymore' % unit_name)
+
     def is_unit_failed(self, unit_name):
         unit = self.manager.GetUnit(unit_name)
         if not unit:
@@ -102,17 +115,7 @@ class SystemdInterface(object):
             logging.debug('Unit %s: ActiveState=%s, SubState=%s'
                           % (unit_name, active_state, sub_state))
 
-            if failed_state:
-                if unit_name in self.failed_units:
-                    logging.debug('Unit %s: already failed, not notifying.'
-                                  % unit_name)
-                else:
-                    self.failed_units.append(unit_name)
-                    notify.send_email(unit_name)
-
-            elif unit_name in self.failed_units:
-                self.failed_units.remove(unit_name)
-                logging.debug('Unit %s: not failed anymore' % unit_name)
+            self.register_failed_state(unit_name, failed_state)
 
             return failed_state
 
@@ -128,7 +131,7 @@ class SystemdInterface(object):
             notify.send_email(unit)
         elif policy == 'onfailure':
             if result == 'failed':
-                notify.send_email(unit)
+                self.register_failed_state(unit, True)
             elif not self.is_unit_failed(unit):
                 GLib.timeout_add(1000, self.is_unit_failed_retry, unit)
 
