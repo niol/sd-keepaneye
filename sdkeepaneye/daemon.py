@@ -31,7 +31,7 @@ from . import notify
 
 class SystemdInterface(object):
 
-    def __init__(self):
+    def __init__(self, conf):
         self.sysbus = pydbus.SystemBus()
         if not self.sysbus:
             logging.error('Cannot connect to system D-Bus')
@@ -44,6 +44,7 @@ class SystemdInterface(object):
 
         GLib.timeout_add(100, self.subscribe)
 
+        self.conf = conf
         self.failed_units = []
 
     def __init_failed_units(self):
@@ -54,7 +55,7 @@ class SystemdInterface(object):
         if self.failed_units:
             logging.debug('found the following failed units at startup: \n\t%s' % '\n\t'.join(self.failed_units))
             for failed_unit in self.failed_units:
-                notify.send_failure_email(failed_unit)
+                notify.send_email(failed_unit)
         else:
             logging.debug('no failed units found at startup')
 
@@ -66,6 +67,16 @@ class SystemdInterface(object):
 
         systemd.daemon.notify('READY=1')
         return False # make Glib.timeout_add() not repeat the call
+
+    def get_unit_policy(self, unit):
+        policy = None
+        unit_name = unit.split('.')[0]
+        if unit_name in self.conf['notify']:
+            policy = self.conf['notify'][unit_name]
+        else:
+            policy = self.conf['keepaneye']['notify_policy']
+        logging.debug("Policy for unit %s is '%s'", unit, policy)
+        return policy
 
     def is_unit_failed(self, unit_name):
         unit = self.manager.GetUnit(unit_name)
@@ -97,7 +108,7 @@ class SystemdInterface(object):
                                   % unit_name)
                 else:
                     self.failed_units.append(unit_name)
-                    notify.send_failure_email(unit_name)
+                    notify.send_email(unit_name)
 
             elif unit_name in self.failed_units:
                 self.failed_units.remove(unit_name)
@@ -112,14 +123,18 @@ class SystemdInterface(object):
     def systemd_event_cb(self, pid, jobid, unit, result):
         logging.debug('received event for unit %s with result %s'
                       % (unit, result))
-        if result == 'failed':
-            notify.send_failure_email(unit)
-        elif not self.is_unit_failed(unit):
-            GLib.timeout_add(1000, self.is_unit_failed_retry, unit)
+        policy = self.get_unit_policy(unit)
+        if policy == 'always':
+            notify.send_email(unit)
+        elif policy == 'onfailure':
+            if result == 'failed':
+                notify.send_email(unit)
+            elif not self.is_unit_failed(unit):
+                GLib.timeout_add(1000, self.is_unit_failed_retry, unit)
 
 
-def start():
-    SystemdInterface()
+def start(conf):
+    SystemdInterface(conf)
     loop = GLib.MainLoop()
 
     def sigint_handler(sig, frame):

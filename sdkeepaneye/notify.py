@@ -41,7 +41,7 @@ logging.debug('hostname   is %s' % HOSTNAME)
 logging.debug('boot-id    is %s' % BOOTID)
 
 
-def send_failure_email(unit):
+def send_email(unit):
     msg = EmailMessage()
     msg['Subject'] = 'Status report for unit: %s' % unit
     msg['From'] = 'systemd event monitor <root>'
@@ -67,9 +67,9 @@ Boot ID:\t%(bootid)s
     try:
         p = subprocess.run(cmd, input=msg.as_bytes(), capture_output=True)
     except subprocess.CalledProcessError:
-        logging.error('could not send email for failure of %s' % unit)
+        logging.error('could not send email for event of %s' % unit)
         logging.error('`%s` call failed with the following output:%s'
                       % (' '.join(cmd),
                          p))
     else:
-        logging.info('sent email for failure of %s' % unit)
+        logging.info('sent email for event of %s' % unit)

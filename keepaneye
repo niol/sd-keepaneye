@@ -74,4 +74,4 @@ if __name__ == '__main__':
 
     if args.subcommand == 'daemon':
         import sdkeepaneye.daemon
-        sdkeepaneye.daemon.start()
+        sdkeepaneye.daemon.start(conf)
