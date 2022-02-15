@@ -1,3 +1,24 @@
+sd-keepaneye (0.4-1) unstable; urgency=medium
+
+  * document found alternatives
+  * spelling in manpage
+  * improve debian binary package description
+  * do not notify for an already failed unit
+  * document that OnFailure can be defined for all services (thanks Michael Biebl)
+  * add conf file
+  * migrate from the deprecated python-dbus to python-pydbus
+  * make the daemon mode a subcommand
+  * split in multiple modules
+  * document configuration file
+  * add .gitignore
+  * implement notification policy: always get an email when a specific service is done
+  * git ignore __pycache__
+  * fix multiple notifications for failed units
+  * set version to 0.4
+  * move man to section 8 System administration
+
+ -- Alexandre Rossi <alexandre.rossi@gmail.com>  Tue, 15 Feb 2022 08:05:13 +0100
+
 sd-keepaneye (0.3-1) unstable; urgency=medium
 
   * probe unit state once more and check SubState
