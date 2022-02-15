@@ -1,4 +1,4 @@
-% KEEPANEYE(1)
+% KEEPANEYE(8)
 % Alexandre Rossi
 
 # NAME
