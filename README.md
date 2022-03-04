@@ -2,15 +2,16 @@
 
 ## About
 
-`sd-keeponeye` aims at monitoring systemd services and notifying
-failures. One goal of this tool is to bring back the nice functionality of
-`cron`, which mails `stderr` output.
+`sd-keepaneye` aims at monitoring systemd services and notifying
+failures. One initial goal of this tool was to bring back the nice
+functionality of `cron`, which mails `stderr` output.
 
 It features the following functionality:
 
-* send mail upon job failure: this feature is provided by `keepaneyed`
-  which monitors systemd events using the D-Bus interface. It monitors all
-  jobs and all failures.
+* send mail upon systemd job completion: this feature is provided by
+  `keepaneyed` which monitors systemd events using the D-Bus interface.
+  It monitors all jobs and notifies when a job ends (only for failures in
+  the default configuration).
 
 ## Alternatives
 
