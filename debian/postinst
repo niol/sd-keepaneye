@@ -8,4 +8,8 @@ if ! getent passwd USER >/dev/null; then
             --home /var/lib/sd-keepaneye $USER
 fi
 
+if ! groups $USER | cut -d: -f2 | grep -qw systemd-journal; then
+    adduser $USER systemd-journal
+fi
+
 #DEBHELPER#
