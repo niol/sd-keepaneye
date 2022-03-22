@@ -18,23 +18,30 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-import distutils.command.build
-from distutils.core import setup
-from distutils.core import Command
-from distutils.dep_util import newer
-from distutils.spawn import find_executable
 import glob
 import os
+import shutil
 
 
-class build_manpages(Command):
+import setuptools
+import setuptools.command.build_py
+
+
+def newer(fpath1, fpath2):
+    if os.path.isfile(fpath2):
+        return os.path.getmtime(fpath1) > os.path.getmtime(fpath2)
+    else:
+        return True
+
+
+class build_manpages(setuptools.Command):
 
     description = 'Build manpages'
     user_options = []
 
     manpages = None
     mandir = os.path.join(os.path.dirname(__file__), 'man')
-    executable = find_executable('pandoc')
+    executable = shutil.which('pandoc')
 
     def initialize_options(self):
         pass
@@ -62,28 +69,26 @@ class build_manpages(Command):
             data_files.append((targetpath, (manpage, ), ))
 
 
-class build(distutils.command.build.build):
+class build(setuptools.command.build_py.build_py):
 
-    def __has_manpages(self, command):
-        return 'build_manpages' in self.distribution.cmdclass\
-            and build_manpages.executable is not None
-
-    def finalize_options(self):
-        distutils.command.build.build.finalize_options(self)
-        self.sub_commands.append(("build_manpages", self.__has_manpages))
+    def run(self):
+        if build_manpages.executable is not None:
+            self.run_command('build_manpages')
+        super(build, self).run()
 
 
-setup(name='sd-keepaneye',
-      version='0.4',
-      description='Keeping an eye on systemd',
-      author='Alexandre Rossi',
-      author_email='alexandre.rossi@gmail.com',
-      url='https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/about/',
-      scripts=['keepaneye'],
-      packages=['sdkeepaneye'],
-      data_files=[],
-      cmdclass = {
-          'build'         : build,
-          'build_manpages': build_manpages,
-      },
-     )
+setuptools.setup(
+    name='sd-keepaneye',
+    version='0.4',
+    description='Keeping an eye on systemd',
+    author='Alexandre Rossi',
+    author_email='alexandre.rossi@gmail.com',
+    url='https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/about/',
+    scripts=['keepaneye'],
+    packages=['sdkeepaneye'],
+    data_files=[],
+    cmdclass = {
+        'build_py'         : build,
+        'build_manpages': build_manpages,
+    },
+)
