@@ -128,9 +128,10 @@ class SystemdInterface(object):
         self.is_unit_failed(unit_name)
         return False # make Glib.timeout_add() not repeat the call
 
-    def systemd_event_cb(self, pid, jobid, unit, result):
-        logging.debug('received event for unit %s with result %s'
-                      % (unit, result))
+    def systemd_event_cb(self, jobid, job_buspath, unit, result):
+        logging.debug('received event for unit %s with result %s, jobid=%s'
+                      % (unit, result, jobid))
+
         policy = self.get_unit_policy(unit)
         if policy == 'always':
             notify.send_email(unit)
