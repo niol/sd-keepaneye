@@ -112,8 +112,13 @@ class SystemdInterface(object):
                                            'SubState')
                 if sub_state == 'failed':
                     failed_state = True
-            logging.debug('Unit %s: ActiveState=%s, SubState=%s'
-                          % (unit_name, active_state, sub_state))
+
+            invocation_id = unit_props.Get('org.freedesktop.systemd1.Unit',
+                                           'InvocationID')
+
+            logging.debug('Unit %s: ActiveState=%s, SubState=%s, InvocationID=%s'
+                          % (unit_name, active_state, sub_state,
+                             invocation_id))
 
             self.register_failed_state(unit_name, failed_state)
 
