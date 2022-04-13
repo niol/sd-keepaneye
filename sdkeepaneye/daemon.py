@@ -118,7 +118,7 @@ class SystemdInterface(object):
 
             logging.debug('Unit %s: ActiveState=%s, SubState=%s, InvocationID=%s'
                           % (unit_name, active_state, sub_state,
-                             invocation_id))
+                             ''.join(map(lambda x: '%0.2x' %x, invocation_id))))
 
             self.register_failed_state(unit_name, failed_state)
 
