@@ -41,19 +41,12 @@ logging.debug('hostname   is %s' % HOSTNAME)
 logging.debug('boot-id    is %s' % BOOTID)
 
 
-def send_email(unit):
-    msg = EmailMessage()
-    msg['Subject'] = 'Status report for unit: %s' % unit
-    msg['From'] = 'systemd event monitor <root>'
-    msg['To'] = 'root'
-
-    msg.set_content("""
-Hostname:\t%(hostname)s
+def systemctl_status(unit):
+    return """Hostname:\t%(hostname)s
 Machine ID:\t%(machineid)s
 Boot ID:\t%(bootid)s
 
-%(status)s
-""" % {
+%(status)s""" % {
     'unit'      : unit,
     'hostname'  : HOSTNAME,
     'machineid' : MACHINEID,
@@ -62,6 +55,15 @@ Boot ID:\t%(bootid)s
     'status'    : subprocess.run(('systemctl', 'status', unit, '-l', '-n', '9999'),
                                  capture_output=True).stdout.decode(sys.getdefaultencoding()),
 })
+
+
+def send_email(unit):
+    msg = EmailMessage()
+    msg['Subject'] = 'Status report for unit: %s' % unit
+    msg['From'] = 'systemd event monitor <root>'
+    msg['To'] = 'root'
+
+    msg.set_content(systemctl_status(unit))
 
     cmd = ('/usr/sbin/sendmail', '-t', '-oi')
     try:
@@ -73,3 +75,15 @@ Boot ID:\t%(bootid)s
                          p))
     else:
         logging.info('sent email for event of %s' % unit)
+
+
+def notify(notify_type, service):
+    if notify_type == 'email':
+        send_email(service)
+    elif notify_type == 'stdout':
+        print(systemctl_status(service))
+    else:
+        logging.error('unknown notification type %s.' % notify_type)
+        sys.exit(os.EX_USAGE)
+
+

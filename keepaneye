@@ -46,12 +46,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Systemd Event Monitor.')
     parser.add_argument('-d', '--debug',
                         action='store_true',
-                        dest="debug",
+                        dest='debug',
                         help='Enable DEBUG level loggging and log to STDOUT instead of journald')
 
     subparsers = parser.add_subparsers(dest='subcommand', help='sub-commands help')
 
     parser_daemon = subparsers.add_parser('daemon', help='launch daemon watching systemd D-bus events')
+
+    parser_notify = subparsers.add_parser('notify', help='notify for the specified service')
+    parser_notify.add_argument('-s', '--service',
+                               action='store',
+                               dest='service',
+                               required=True,
+                               help='The service to notify for')
+    parser_notify.add_argument('-t', '--type',
+                               action='store',
+                               dest='notify_type',
+                               default='stdout',
+                               help='The type of notification to use (default is stdout)')
 
     args = parser.parse_args()
 
@@ -75,3 +87,8 @@ if __name__ == '__main__':
     if args.subcommand == 'daemon':
         import sdkeepaneye.daemon
         sdkeepaneye.daemon.start(conf)
+    elif args.subcommand == 'notify':
+        import sdkeepaneye.notify
+        sdkeepaneye.notify.notify(args.notify_type, args.service)
+
+
