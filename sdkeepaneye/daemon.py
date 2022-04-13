@@ -22,6 +22,7 @@ import sys
 
 
 from gi.repository import GLib
+from gi.repository import Gio
 import pydbus
 import systemd.daemon
 
@@ -92,7 +93,17 @@ class SystemdInterface(object):
             logging.debug('Unit %s: not failed anymore' % unit_name)
 
     def is_unit_failed(self, unit_name):
-        unit = self.manager.GetUnit(unit_name)
+        try:
+            unit = self.manager.GetUnit(unit_name)
+        except GLib.Error as err:
+            if Gio.DBusError.get_remote_error(err) \
+            == 'org.freedesktop.systemd1.NoSuchUnit':
+                logging.info('Could not find any info on Unit %s, ignoring.'
+                             % unit_name)
+                return False
+            else:
+                raise
+
         if not unit:
             logging.debug('unit %s not found in system bus, user unit?' % unit_name)
             return None
@@ -131,6 +142,10 @@ class SystemdInterface(object):
     def systemd_event_cb(self, jobid, job_buspath, unit, result):
         logging.debug('received event for unit %s with result %s, jobid=%s'
                       % (unit, result, jobid))
+
+        if unit.split('.')[-1] == 'scope':
+            logging.debug('%s is a scope unit, ignoring.' % unit)
+            return
 
         policy = self.get_unit_policy(unit)
         if policy == 'always':
