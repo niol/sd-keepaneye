@@ -3,7 +3,7 @@ set -e
 
 USER=_sd-keepaneye
 
-if ! getent passwd USER >/dev/null; then
+if ! getent passwd $USER >/dev/null; then
     adduser --quiet --system --no-create-home --force-badname \
             --home /var/lib/sd-keepaneye $USER
 fi
