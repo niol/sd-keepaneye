@@ -53,8 +53,8 @@ Boot ID:\t%(bootid)s
     'bootid'    : BOOTID,
     # FIXME: replace with systemd.journal.Reader() ?
     'status'    : subprocess.run(('systemctl', 'status', unit, '-l', '-n', '9999'),
-                                 capture_output=True).stdout.decode(sys.getdefaultencoding()),
-})
+                                  capture_output=True).stdout.decode(sys.getdefaultencoding()),
+}
 
 
 def send_email(unit):
