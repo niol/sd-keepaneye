@@ -79,14 +79,18 @@ class SystemdInterface(object):
         logging.debug("Policy for unit %s is '%s'", unit, policy)
         return policy
 
-    def register_failed_state(self, unit_name, failed_state):
+    def register_failed_state(self, unit_name, invocation_id, failed_state):
         if failed_state:
             if unit_name in self.failed_units:
                 logging.debug('Unit %s: already failed, not notifying.'
-                                % unit_name)
+                              % unit_name)
             else:
-                self.failed_units.append(unit_name)
-                notify.send_email(unit_name)
+                failure = {
+                    'unit'          : unit_name,
+                    'invocation_id' : invocation_id,
+                }
+                self.failed_units.append(failure)
+                notify.send_email(failure)
 
         elif unit_name in self.failed_units:
             self.failed_units.remove(unit_name)
@@ -98,8 +102,8 @@ class SystemdInterface(object):
         except GLib.Error as err:
             if Gio.DBusError.get_remote_error(err) \
             == 'org.freedesktop.systemd1.NoSuchUnit':
-                logging.info('Could not find any info on Unit %s, ignoring.'
-                             % unit_name)
+                logging.debug('Could not find any info on Unit %s, ignoring.'
+                              % unit_name)
                 return False
             else:
                 raise
@@ -126,12 +130,13 @@ class SystemdInterface(object):
 
             invocation_id = unit_props.Get('org.freedesktop.systemd1.Unit',
                                            'InvocationID')
+            invocation_id = ''.join(map(lambda x: '%0.2x' %x, invocation_id))
 
             logging.debug('Unit %s: ActiveState=%s, SubState=%s, InvocationID=%s'
                           % (unit_name, active_state, sub_state,
-                             ''.join(map(lambda x: '%0.2x' %x, invocation_id))))
+                             invocation_id))
 
-            self.register_failed_state(unit_name, failed_state)
+            self.register_failed_state(unit_name, invocation_id, failed_state)
 
             return failed_state
 
@@ -151,9 +156,7 @@ class SystemdInterface(object):
         if policy == 'always':
             notify.send_email(unit)
         elif policy == 'onfailure':
-            if result == 'failed':
-                self.register_failed_state(unit, True)
-            elif not self.is_unit_failed(unit):
+            if not self.is_unit_failed(unit):
                 GLib.timeout_add(1000, self.is_unit_failed_retry, unit)
 
 
