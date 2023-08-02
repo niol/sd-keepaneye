@@ -1,3 +1,10 @@
+sd-keepaneye (0.7-1) unstable; urgency=medium
+
+  * add collectd plugin to gather stats on units
+  * add collectd plugin to sdist
+
+ -- Alexandre Rossi <niol@zincube.net>  Wed, 02 Aug 2023 10:57:05 +0200
+
 sd-keepaneye (0.6-1) unstable; urgency=medium
 
   * do not fill out log with transient unit info
