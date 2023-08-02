@@ -12,6 +12,7 @@ It features the following functionality:
   `keepaneyed` which monitors systemd events using the D-Bus interface.
   It monitors all jobs and notifies when a job ends (only for failures in
   the default configuration).
+* collectd plugin to gather stats on unit states (active, failed, etc.).
 
 ## Alternatives
 

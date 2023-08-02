@@ -1,3 +1,4 @@
 keepaneye usr/bin
 keepaneyed.service lib/systemd/system
 keepaneye.conf etc
+collectd/systemdunits.py etc/collectd/python

@@ -27,30 +27,24 @@ import pydbus
 import systemd.daemon
 
 
+from . import systemdif
 from . import notify
 
 
-class SystemdInterface(object):
+class SystemdMonitor(systemdif.SystemdInterface):
 
     def __init__(self, conf):
-        self.sysbus = pydbus.SystemBus()
-        if not self.sysbus:
-            logging.error('Cannot connect to system D-Bus')
-            sys.exit(1)
+        super(SystemdMonitor, self).__init__()
 
-        systemd1 = self.sysbus.get('.systemd1')
-        systemd1.JobRemoved.connect(self.systemd_event_cb)
-
-        self.manager = systemd1['.Manager']
-
+        self.systemd1.JobRemoved.connect(self.systemd_event_cb)
         GLib.timeout_add(100, self.subscribe)
 
         self.conf = conf
         self.failed_units = []
 
     def __init_failed_units(self):
-        for u in self.manager.ListUnits():
-            unit, load, active, state = u[:4]
+        for u in self.list_units():
+            unit, load, active, state = u
             if state == 'failed':
                 self.failed_units.append(unit)
         if self.failed_units:
@@ -161,7 +155,7 @@ class SystemdInterface(object):
 
 
 def start(conf):
-    SystemdInterface(conf)
+    SystemdMonitor(conf)
     loop = GLib.MainLoop()
 
     def sigint_handler(sig, frame):
