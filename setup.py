@@ -86,7 +86,7 @@ setuptools.setup(
     url='https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/about/',
     scripts=['keepaneye'],
     packages=['sdkeepaneye'],
-    data_files=[],
+    data_files=['collectd/systemdunits.py', ],
     cmdclass = {
         'build_py'         : build,
         'build_manpages': build_manpages,
