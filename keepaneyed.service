@@ -1,6 +1,7 @@
 [Unit]
 Description=Systemd keepaneye daemon
 Documentation=man:keepaneye
+Requires=dbus.socket
 
 [Service]
 Type=notify
