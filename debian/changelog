@@ -1,3 +1,11 @@
+sd-keepaneye (0.8-1) unstable; urgency=medium
+
+  * fix service failure notification
+  * better collectd plugin inclusion for sdist
+  * daemon requires dbus socket
+
+ -- Alexandre Rossi <niol@zincube.net>  Tue, 05 Sep 2023 17:36:58 +0200
+
 sd-keepaneye (0.7-1) unstable; urgency=medium
 
   * add collectd plugin to gather stats on units
