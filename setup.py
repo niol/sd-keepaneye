@@ -79,7 +79,7 @@ class build(setuptools.command.build_py.build_py):
 
 setuptools.setup(
     name='sd-keepaneye',
-    version='0.7',
+    version='0.8',
     description='Keeping an eye on systemd',
     author='Alexandre Rossi',
     author_email='alexandre.rossi@gmail.com',
