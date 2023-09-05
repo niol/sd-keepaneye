@@ -48,7 +48,7 @@ class SystemdInterface(object):
             try:
                 assert load in ('loaded', 'not-found', )
                 assert active in ('active', 'inactive', 'activating', 'deactivating', 'failed', )
-                assert state in ('plugged', 'exited', 'running', 'dead', 'active', 'waiting', 'elapsed', 'mounted', 'listening', )
+                assert state in ('plugged', 'exited', 'running', 'dead', 'active', 'waiting', 'elapsed', 'mounted', 'listening', 'failed', )
             except AssertionError:
                 logging.debug('Unknwon state received for unit %s: %s'
                               % (unit, ', '.join((load, active, state, )), ))

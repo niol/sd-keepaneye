@@ -57,7 +57,7 @@ Boot ID:\t%(bootid)s
 }
 
 
-def send_email(unit):
+def send_email(unit, invocation_id=None):
     msg = EmailMessage()
     msg['Subject'] = 'Status report for unit: %s' % unit
     msg['From'] = 'systemd event monitor <root>'
@@ -77,11 +77,11 @@ def send_email(unit):
         logging.info('sent email for event of %s' % unit)
 
 
-def notify(notify_type, service):
+def notify(notify_type, unit, invocation_id=None):
     if notify_type == 'email':
-        send_email(service)
+        send_email(unit, invocation_id)
     elif notify_type == 'stdout':
-        print(systemctl_status(service))
+        print(systemctl_status(unit))
     else:
         logging.error('unknown notification type %s.' % notify_type)
         sys.exit(os.EX_USAGE)

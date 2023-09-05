@@ -84,10 +84,13 @@ class SystemdMonitor(systemdif.SystemdInterface):
                     'invocation_id' : invocation_id,
                 }
                 self.failed_units.append(failure)
-                notify.send_email(failure)
+                notify.send_email(unit_name)
 
         elif unit_name in self.failed_units:
-            self.failed_units.remove(unit_name)
+            for f in self.failed_units:
+                if f['unit'] == unit_name:
+                    self.failed_units.remove(f)
+                    break
             logging.debug('Unit %s: not failed anymore' % unit_name)
 
     def is_unit_failed(self, unit_name):
