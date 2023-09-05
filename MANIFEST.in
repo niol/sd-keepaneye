@@ -3,3 +3,4 @@ include README.md
 include keepaneyed.service
 include keepaneye.conf
 include man/*md
+include collectd/systemdunits.py
