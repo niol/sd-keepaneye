@@ -59,7 +59,7 @@ Boot ID:\t%(bootid)s
 
 def send_email(unit, invocation_id=None):
     msg = EmailMessage()
-    msg['Subject'] = 'Status report for unit: %s' % unit
+    msg['Subject'] = f"Host {HOSTNAME} status report for unit {unit}"
     msg['From'] = 'systemd event monitor <root>'
     msg['To'] = 'root'
 
