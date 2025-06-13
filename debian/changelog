@@ -1,3 +1,11 @@
+sd-keepaneye (0.9-1) unstable; urgency=medium
+
+  * /usr-move for systemd unit
+  * add host in notify email subject
+  * fix distutils error
+
+ -- Alexandre Rossi <niol@zincube.net>  Fri, 13 Jun 2025 16:26:38 +0200
+
 sd-keepaneye (0.8-1) unstable; urgency=medium
 
   * fix service failure notification
