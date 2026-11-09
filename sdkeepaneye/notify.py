@@ -34,6 +34,7 @@ def readfile(path):
 MACHINEID = readfile('/etc/machine-id')
 HOSTNAME = os.uname()[1]
 BOOTID = readfile('/proc/sys/kernel/random/boot_id')
+MAILNAME = readfile("/etc/mailname")
 
 
 logging.debug('machine-id is %s' % MACHINEID)
@@ -60,8 +61,8 @@ Boot ID:\t%(bootid)s
 def send_email(unit, invocation_id=None):
     msg = EmailMessage()
     msg['Subject'] = f"Host {HOSTNAME} status report for unit {unit}"
-    msg['From'] = 'systemd event monitor <root>'
-    msg['To'] = 'root'
+    msg['From'] = f"systemd event monitor <sd-keepaneye@{MAILNAME}>"
+    msg['To'] = f"root@{MAILNAME}"
 
     msg.set_content(systemctl_status(unit))
 
