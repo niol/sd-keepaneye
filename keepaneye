@@ -76,11 +76,16 @@ if __name__ == '__main__':
 
     if conf['keepaneye']['debug']:
         log_level = logging.DEBUG
-        log_handler = logging.StreamHandler(sys.stdout)
-        log_handler.setFormatter(logging.Formatter('%(levelname)s:%(message)s'))
     else:
         log_level = logging.INFO
+
+    if "INVOCATION_ID" in os.environ:
+        # running as systemd service
         log_handler = systemd.journal.JournalHandler(SYSLOG_IDENTIFIER='keepaneyed')
+    else:
+        log_handler = logging.StreamHandler(sys.stdout)
+        log_handler.setFormatter(logging.Formatter('%(levelname)s:%(message)s'))
+
     log.setLevel(log_level)
     log.addHandler(log_handler)
 
