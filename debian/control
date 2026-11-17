@@ -1,7 +1,7 @@
 Source: sd-keepaneye
 Section: admin
 Priority: optional
-Maintainer: Alexandre Rossi <alexandre.rossi@gmail.com>
+Maintainer: Alexandre Rossi <niol@zincube.net>
 Build-Depends: debhelper-compat (= 13),
     python3, python3-setuptools, dh-python, pandoc
 Standards-Version: 4.6.0
