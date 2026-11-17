@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sd-keepaneye"
+version = "0.1"
+description = "Keeping an eye on systemd"
+authors = [
+    {name = "Alexandre Rossi", email = "niol@zincube.net"},
+]
+maintainers = [
+    {name = "Alexandre Rossi", email = "niol@zincube.net"},
+]
+readme = "README.md"
+license = "GPL-2.0-or-later"
+license-files = [ "LICENSE" ]
+requires-python = ">=3.6"
+dependencies = [
+    "systemd",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black"
+]
+
+[project.urls]
+Homepage = "https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/about"
+Repository = "https://sml.zincube.net/~niol/repositories.git/sd-keepaneye/"
+
+[tool.setuptools]
+packages = [ "sdkeepaneye" ]
