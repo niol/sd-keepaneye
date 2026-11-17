@@ -52,6 +52,22 @@ This section defines general configuration options.
 
 : same as `-d`, `true` or `false`
 
+`notify_policy`
+
+: when to send notification. Options are `onfailure` (default) or
+`onstderr` whenever a the journal contains an error.
+
+## SECTION NOTIFY
+
+This section defines a list of associations between service names
+and notify policy. The possible values for notify policy are:
+
+   - `always`: always notify when the service finishes.
+   - `onfailure`: notify when the unit is failed
+
+The default is to apply the `notify_policy` defined in the
+`keepaneye` section.
+
 # FILES
 
 `/lib/systemd/system/keepaneyed.service`
